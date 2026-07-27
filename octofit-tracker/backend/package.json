@@ -2,6 +2,7 @@
   "name": "octofit-backend",
   "private": true,
   "version": "0.1.0",
+  "type": "module",
   "scripts": {
     "dev": "PORT=8000 ts-node src/index.ts",
     "build": "tsc",
