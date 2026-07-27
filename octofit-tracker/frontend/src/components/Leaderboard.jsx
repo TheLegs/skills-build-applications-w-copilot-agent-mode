@@ -1,24 +1,33 @@
 import { useEffect, useState } from 'react'
-import { fetchApiList, getApiBaseUrl, getViteCodespaceName } from '../lib/api.js'
+import { normalizeApiResponse } from '../lib/api.js'
 
 function Leaderboard() {
   const [entries, setEntries] = useState([])
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
-  const codespaceName = getViteCodespaceName()
+  const codespaceName = import.meta.env.VITE_CODESPACE_NAME
+  const apiEndpoint = codespaceName
+    ? `https://${codespaceName}-8000.app.github.dev/api/leaderboard/`
+    : 'http://localhost:8000/api/leaderboard/'
 
   useEffect(() => {
-    fetchApiList('leaderboard', 'leaderboard')
-      .then(setEntries)
+    fetch(apiEndpoint)
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`API request failed: ${response.status}`)
+        }
+        return response.json()
+      })
+      .then((json) => setEntries(normalizeApiResponse(json, 'leaderboard')))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
-  }, [])
+  }, [apiEndpoint])
 
   return (
     <section className="py-4">
       <h2>Leaderboard</h2>
       <p>
-        API base URL: <strong>{getApiBaseUrl()}</strong>
+        API endpoint: <strong>{apiEndpoint}</strong>
       </p>
       <p>
         {codespaceName

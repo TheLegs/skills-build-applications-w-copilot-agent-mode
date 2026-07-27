@@ -7,6 +7,8 @@ export const getApiBaseUrl = () => {
     : 'http://localhost:8000/api'
 }
 
+export const getApiEndpoint = (resource) => `${getApiBaseUrl()}/${resource}/`
+
 export const normalizeApiResponse = (data, listKey) => {
   if (!data) {
     return []
@@ -32,7 +34,7 @@ export const normalizeApiResponse = (data, listKey) => {
 }
 
 export const fetchApiList = async (resource, listKey) => {
-  const url = `${getApiBaseUrl()}/${resource}`
+  const url = getApiEndpoint(resource)
   const response = await fetch(url)
 
   if (!response.ok) {

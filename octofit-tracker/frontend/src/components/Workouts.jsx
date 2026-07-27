@@ -1,24 +1,33 @@
 import { useEffect, useState } from 'react'
-import { fetchApiList, getApiBaseUrl, getViteCodespaceName } from '../lib/api.js'
+import { normalizeApiResponse } from '../lib/api.js'
 
 function Workouts() {
   const [workouts, setWorkouts] = useState([])
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
-  const codespaceName = getViteCodespaceName()
+  const codespaceName = import.meta.env.VITE_CODESPACE_NAME
+  const apiEndpoint = codespaceName
+    ? `https://${codespaceName}-8000.app.github.dev/api/workouts/`
+    : 'http://localhost:8000/api/workouts/'
 
   useEffect(() => {
-    fetchApiList('workouts', 'workouts')
-      .then(setWorkouts)
+    fetch(apiEndpoint)
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`API request failed: ${response.status}`)
+        }
+        return response.json()
+      })
+      .then((json) => setWorkouts(normalizeApiResponse(json, 'workouts')))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
-  }, [])
+  }, [apiEndpoint])
 
   return (
     <section className="py-4">
       <h2>Workouts</h2>
       <p>
-        API base URL: <strong>{getApiBaseUrl()}</strong>
+        API endpoint: <strong>{apiEndpoint}</strong>
       </p>
       <p>
         {codespaceName
@@ -40,8 +49,7 @@ function Workouts() {
                     <strong>Duration:</strong> {workout.durationMinutes} minutes
                   </p>
                   <p className="card-text mb-0">
-                    <strong>Intensity:</strong> {workout.intensity}
-                  </p>
+                    <strong>Intensity:</strong> {workout.intensity}</p>
                 </div>
               </div>
             </div>
